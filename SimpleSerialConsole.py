@@ -24,6 +24,7 @@ class Ui(QtWidgets.QMainWindow):
         subWindow = self.mdiArea.addSubWindow(self.theCommPanel)
         subWindow.show()
         self.theCommPanel.parentWindow = self
+        self.theCommPanel.serialQueue = SERIALQUEUE
         self.processQueue = True
 
         oneThing = "a test"
@@ -70,15 +71,18 @@ class Ui(QtWidgets.QMainWindow):
 
     def addToIncomingQueue(self, theData):
         SERIALQUEUE.put(theData)
-
+    # item = q.get()
+    # do_work(item)
+    # q.task_done()
     def processIncomingQueue_thread(self):
         while self.processQueue is True:
             try:
-                item = SERIALQUEUE.get(timeout=0.5)
+                item = SERIALQUEUE.get_nowait()
             except queue.Empty:
                 pass
-                # print('Consumer: gave up waiting...')
+                #print('Consumer: gave up waiting...')
                 continue
+            # SERIALQUEUE.task_done()
             print("item=["+str(item.rstrip())+"]")
             self.sendDataToIOPanel(item)
 

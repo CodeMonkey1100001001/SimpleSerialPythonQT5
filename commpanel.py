@@ -21,6 +21,8 @@ class CommPanel(QtWidgets.QMainWindow):
 
         self.incomingData = None
 
+        self.serialQueue = None
+
 
         self.logToFile = False
 
@@ -69,9 +71,7 @@ class CommPanel(QtWidgets.QMainWindow):
             self.genericSerialPort.write(theData.encode())
 
     def serial_reader_thread(self):
-        global globalSerialQueueIN
-        global globalReadSerialPort
-        global globalReadSerialPortExit
+
         c = 0
         seq = []
         print("serial_reader_thread starting ================")
@@ -80,28 +80,23 @@ class CommPanel(QtWidgets.QMainWindow):
             time.sleep(0.0001)
             if (self.serialPortOpen == True):
                 for c in self.genericSerialPort.read():
-                    #print("chr="+chr(c))
+                    # print("chr="+chr(c))
                     seq.append(chr(c))  # convert from ANSII
                     joined_seq = ''.join(str(v) for v in seq)  # Make a string from array
 
                 if chr(c) == '\n':
-                    # print("Line " + str(count) + ': ' + joined_seq)
+                    #print("Line " + str(count) + ': ' + joined_seq)
                     # strToHex(joined_seq)
                     tsSerialPortLine = joined_seq
                     tsSerialPortLineReady = True
                     joined_seq = ""
                     seq = []
-                    # print("serialPortLine="+tsSerialPortLine)
                     c = 0
-                    # send this up to the dispatcher in window.
-                    # globalParentWindow.dispatchHandler(tsSerialPortLine)
-                    # globalCommPanelUpdate=True
-                    #globalSerialQueueIN.put(tsSerialPortLine)
                     self.incomingData = tsSerialPortLine
+                    #self.parentWindow.addToIncomingQueue(self.incomingData)
+                    #SERIALQUEUE.put(self.incomingData)
+                    self.serialQueue.put(self.incomingData)
                     #print("incomingData",self.incomingData)
-                    # self.parentWindow.sendDataToIOPanel(self.incomingData)
-                    # SERIALQUEUE.put(self.incomingData)
-                    self.parentWindow.addToIncomingQueue(self.incomingData)
-                    # after this assume all is well and null out that data
+                    
         print("Serial Reader thread terminating normally")
         self.serialReaderThreadRunning = False
