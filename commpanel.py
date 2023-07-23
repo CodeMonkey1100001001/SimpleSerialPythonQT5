@@ -7,7 +7,6 @@ import serial.tools.list_ports
 import serial
 
 class CommPanel(QtWidgets.QMainWindow):
-
     def __init__(self):
         super(CommPanel, self).__init__()
         uic.loadUi("commpanel.ui", self)
@@ -40,9 +39,11 @@ class CommPanel(QtWidgets.QMainWindow):
     def stopSerialReaderThread(self):
         self.serialReaderThreadNeeded = False
         # self.stopSerialReaderThread()
-        print("2stopping serialReaderThread")
+        print("stopping serialReaderThread")
         while (self.serialReaderThreadRunning == True):
             print("waiting for comm port to finish")
+            time.sleep(0.5)
+            pass
 
 
     def OpenCommPort(self):
@@ -97,8 +98,10 @@ class CommPanel(QtWidgets.QMainWindow):
                     # globalCommPanelUpdate=True
                     #globalSerialQueueIN.put(tsSerialPortLine)
                     self.incomingData = tsSerialPortLine
-                    print("incomingData",self.incomingData)
-                    self.parentWindow.sendDataToIOPanel(self.incomingData)
+                    #print("incomingData",self.incomingData)
+                    # self.parentWindow.sendDataToIOPanel(self.incomingData)
+                    # SERIALQUEUE.put(self.incomingData)
+                    self.parentWindow.addToIncomingQueue(self.incomingData)
                     # after this assume all is well and null out that data
         print("Serial Reader thread terminating normally")
-        self.serialReaderThreadRunning = True
+        self.serialReaderThreadRunning = False
