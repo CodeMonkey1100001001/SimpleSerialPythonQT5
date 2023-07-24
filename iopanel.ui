@@ -92,6 +92,7 @@
   </connection>
  </connections>
  <slots>
+  <signal>UpdateTextArea()</signal>
   <slot>sendLine()</slot>
  </slots>
 </ui>

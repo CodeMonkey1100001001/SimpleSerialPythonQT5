@@ -1,5 +1,5 @@
-import threading
-import time
+import threading  # to debug segfaults
+import time  # to debug segfaults
 
 from PyQt5 import QtWidgets, uic
 
@@ -95,8 +95,11 @@ class CommPanel(QtWidgets.QMainWindow):
                     self.incomingData = tsSerialPortLine
                     #self.parentWindow.addToIncomingQueue(self.incomingData)
                     #SERIALQUEUE.put(self.incomingData)
-                    self.serialQueue.put(self.incomingData)
+                    try:
+                        self.serialQueue.put_nowait(self.incomingData)
+                    except:
+                        print("queproblem)")
                     #print("incomingData",self.incomingData)
-                    
+
         print("Serial Reader thread terminating normally")
         self.serialReaderThreadRunning = False

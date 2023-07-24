@@ -1,8 +1,14 @@
+import faulthandler
+
+from PyQt5.QtCore import QTimer
+
+faulthandler.enable()
+
 import queue
 import threading
 import time
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtCore
 import sys
 import commpanel
 import iopanel
@@ -10,8 +16,10 @@ from queue import Queue
 
 # globalParentWindow=None
 # I will be using the queue instead of QT Signals and Slots so that I can use it with other frameworks
-SERIALQUEUE = Queue()
+#SERIALQUEUE = Queue(maxsize=100)
+SERIALQUEUE = queue.SimpleQueue()
 
+stringToAdd = "test"
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -20,20 +28,29 @@ class Ui(QtWidgets.QMainWindow):
         self.show()
         self.theIOPanel = None
         self.theCommPanel = commpanel.CommPanel()
-        subWindow = self.mdiArea.addSubWindow(self.theCommPanel)
+        #subWindow = self.mdiArea.addSubWindow(self.theCommPanel)
         subWindow = self.mdiArea.addSubWindow(self.theCommPanel)
         subWindow.show()
         self.theCommPanel.parentWindow = self
         self.theCommPanel.serialQueue = SERIALQUEUE
         self.processQueue = True
 
-        oneThing = "a test"
-        SERIALQUEUE.put(oneThing)
-        SERIALQUEUE.get()
+#        oneThing = "a test"
+#        SERIALQUEUE.put(oneThing)
+#        SERIALQUEUE.get()
         # just to make sure the queue is working
 
-        self.processQueueThread = threading.Thread(target=self.processIncomingQueue_thread, args=())
-        self.processQueueThread.start()
+        #self.processQueueThread = threading.Thread(target=self.processIncomingQueue_thread, args=())
+        #self.processQueueThread.start()
+
+        self.timer = QTimer()
+        self.timer.setInterval(1)
+        self.timer.timeout.connect(self.mainTick)
+        self.timer.start()
+
+    def mainTick(self):
+        #print("mainTick")
+        self.processIncomingQueue()
 
     def shutdownApp(self):
         print("shutting down")
@@ -61,8 +78,9 @@ class Ui(QtWidgets.QMainWindow):
 
     def sendDataToIOPanel(self, theData):
         if (self.theIOPanel is not None):
-            # print("inserting",theData)
-            self.theIOPanel.textEdit_Incoming.insertPlainText(theData)
+            print("inserting",theData)
+            #self.theIOPanel.textEdit_Incoming.insertPlainText(theData)
+            self.theIOPanel.UpdateTextArea(theData)
 
     def sendDataToSerial(self, whatToSend):
         print("main windows wants to send", whatToSend)
@@ -74,20 +92,21 @@ class Ui(QtWidgets.QMainWindow):
     # item = q.get()
     # do_work(item)
     # q.task_done()
-    def processIncomingQueue_thread(self):
-        while self.processQueue is True:
+    def processIncomingQueue(self):
+        if SERIALQUEUE.empty():
+            pass
+        else:
             try:
                 item = SERIALQUEUE.get_nowait()
             except queue.Empty:
                 pass
-                #print('Consumer: gave up waiting...')
-                continue
+                print('Consumer: gave up waiting...')
             # SERIALQUEUE.task_done()
             print("item=["+str(item.rstrip())+"]")
-            self.sendDataToIOPanel(item)
-
-            time.sleep(0.0001)
-        print("processIncomingQueue_thread ending normally")
+            stringToAdd = item
+            self.sendDataToIOPanel(stringToAdd)
+            #SERIALQUEUE.task_done()
+        #print("processIncomingQueue_thread ending normally")
 
     def closeEvent(self, event):
         self.shutdownApp()  # use this function to stop the threads before exiting.
