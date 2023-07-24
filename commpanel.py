@@ -66,7 +66,7 @@ class CommPanel(QtWidgets.QMainWindow):
 
 
     def sendSerial(self, theData):
-        print("this should go into a queue")
+        # print("this should go into a queue")
         if (self.serialPortOpen == True):
             self.genericSerialPort.write(theData.encode())
 

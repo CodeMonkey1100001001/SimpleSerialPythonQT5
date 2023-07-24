@@ -44,7 +44,7 @@ class Ui(QtWidgets.QMainWindow):
         #self.processQueueThread.start()
 
         self.timer = QTimer()
-        self.timer.setInterval(1)
+        self.timer.setInterval(10)
         self.timer.timeout.connect(self.mainTick)
         self.timer.start()
 
@@ -78,12 +78,12 @@ class Ui(QtWidgets.QMainWindow):
 
     def sendDataToIOPanel(self, theData):
         if (self.theIOPanel is not None):
-            print("inserting",theData)
+            #print("inserting",theData)
             #self.theIOPanel.textEdit_Incoming.insertPlainText(theData)
             self.theIOPanel.UpdateTextArea(theData)
 
     def sendDataToSerial(self, whatToSend):
-        print("main windows wants to send", whatToSend)
+        #print("main windows wants to send", whatToSend)
         self.theCommPanel.sendSerial(whatToSend + "\r")
         # self.sendDataToIOPanel(whatToSend+"\r")
 
@@ -102,7 +102,7 @@ class Ui(QtWidgets.QMainWindow):
                 pass
                 print('Consumer: gave up waiting...')
             # SERIALQUEUE.task_done()
-            print("item=["+str(item.rstrip())+"]")
+            #print("item=["+str(item.rstrip())+"]")
             stringToAdd = item
             self.sendDataToIOPanel(stringToAdd)
             #SERIALQUEUE.task_done()

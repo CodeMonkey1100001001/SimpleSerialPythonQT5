@@ -15,12 +15,13 @@ class IOPanel(QtWidgets.QMainWindow):
         self.parentWindow = None
 
     def sendLine(self):
-        print("sending one line")
+        #print("sending one line")
         whatToSend = self.lineEdit_WTS.text() # self.line.text()
-        print("what to send",whatToSend)
+        print("Sending[",whatToSend,"]")
         self.parentWindow.sendDataToSerial(whatToSend)
 
     def UpdateTextArea(self,whatToAdd):
-        print("whatToAdd",whatToAdd)
+        #print("whatToAdd",whatToAdd)
         # self.theIOPanel.textEdit_Incoming.insertPlainText(theData)
         self.textEdit_Incoming.insertPlainText(whatToAdd)
+        self.textEdit_Incoming.ensureCursorVisible()
