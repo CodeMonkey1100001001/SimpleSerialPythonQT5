@@ -1,10 +1,12 @@
 import threading  # to debug segfaults
 import time  # to debug segfaults
+from queue import Queue
 
 from PyQt5 import QtWidgets, uic
 
 import serial.tools.list_ports
 import serial
+
 
 class CommPanel(QtWidgets.QMainWindow):
     def __init__(self):
@@ -18,12 +20,8 @@ class CommPanel(QtWidgets.QMainWindow):
         self.serialReaderThreadNeeded = False
         self.serialReaderThreadRunning = False
         self.parentWindow = None
-
         self.incomingData = None
-
         self.serialQueue = None
-
-
         self.logToFile = False
 
         self.serialPorts = serial.tools.list_ports.comports()
@@ -35,25 +33,23 @@ class CommPanel(QtWidgets.QMainWindow):
 
         self.serialReaderThreadNeeded = True
         self.serialReaderThread = threading.Thread(target=self.serial_reader_thread, args=())
-        self.serialReaderThread.start();
-
+        self.serialReaderThread.start()
 
     def stopSerialReaderThread(self):
         self.serialReaderThreadNeeded = False
         # self.stopSerialReaderThread()
         print("stopping serialReaderThread")
-        while (self.serialReaderThreadRunning == True):
+        while (self.serialReaderThreadRunning is True):
             print("waiting for comm port to finish")
             time.sleep(0.5)
             pass
-
 
     def OpenCommPort(self):
         currentIndex = self.comboBox_Ports.currentIndex()
         userData = self.comboBox_Ports.itemData(currentIndex)
         print("current Index=" + str(currentIndex))
         print("user Data=" + str(userData))
-        if (self.serialPortOpen == True):
+        if (self.serialPortOpen is True):
             self.genericSerialPort.close()
             self.pushButton_Connect.setText("Connect")
             self.serialPortOpen = False
@@ -64,10 +60,9 @@ class CommPanel(QtWidgets.QMainWindow):
             self.serialPortOpen = True
         self.parentWindow.openIOPanel()
 
-
     def sendSerial(self, theData):
         # print("this should go into a queue")
-        if (self.serialPortOpen == True):
+        if (self.serialPortOpen is True):
             self.genericSerialPort.write(theData.encode())
 
     def serial_reader_thread(self):
@@ -75,31 +70,30 @@ class CommPanel(QtWidgets.QMainWindow):
         c = 0
         seq = []
         print("serial_reader_thread starting ================")
-        while (self.serialReaderThreadNeeded == True):
+        while (self.serialReaderThreadNeeded is True):
             # thread.sleep(0.1)]
             time.sleep(0.0001)
-            if (self.serialPortOpen == True):
+            if (self.serialPortOpen is True):
+                joined_seq = None
                 for c in self.genericSerialPort.read():
                     # print("chr="+chr(c))
                     seq.append(chr(c))  # convert from ANSII
                     joined_seq = ''.join(str(v) for v in seq)  # Make a string from array
 
                 if chr(c) == '\n':
-                    #print("Line " + str(count) + ': ' + joined_seq)
+                    # print("Line " + str(count) + ': ' + joined_seq)
                     # strToHex(joined_seq)
                     tsSerialPortLine = joined_seq
-                    tsSerialPortLineReady = True
                     joined_seq = ""
                     seq = []
                     c = 0
                     self.incomingData = tsSerialPortLine
-                    #self.parentWindow.addToIncomingQueue(self.incomingData)
-                    #SERIALQUEUE.put(self.incomingData)
+                    # SERIALQUEUE.put(self.incomingData)
                     try:
                         self.serialQueue.put_nowait(self.incomingData)
-                    except:
+                    except Queue:
                         print("queproblem)")
-                    #print("incomingData",self.incomingData)
+                    # print("incomingData",self.incomingData)
 
         print("Serial Reader thread terminating normally")
         self.serialReaderThreadRunning = False
