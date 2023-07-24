@@ -5,7 +5,10 @@ It uses a MDI interface.
 
 It will have a incoming queue of data.
 
+-----
 
 Unzip to directory
+
 cd to directory
+
 python3 ./SimpleSerialConsole.py
